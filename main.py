@@ -17,10 +17,8 @@ def init_logger():
     logger = logging.getLogger(config.LOGGER_NAME)
     logger.setLevel(logging.INFO)
     stdout_handler = logging.StreamHandler(sys.stdout)
-    file_handler = logging.FileHandler('log.txt')
     logger.addHandler(stdout_handler)
-    logger.addHandler(file_handler)
-    logger.error('hellooooo')
+
 
 if __name__ == '__main__':
     init_logger()
@@ -31,5 +29,4 @@ if __name__ == '__main__':
     api.add_resource(Now, '/v1/now')
     api.add_resource(VIP, '/v1/VIP/<int:point_in_time>')
 
-    app.run(debug=True)
-    #app.run()
+    app.run()

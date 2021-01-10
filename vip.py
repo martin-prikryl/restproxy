@@ -2,7 +2,6 @@
 VIP API
 '''
 import logging
-import sys
 import urllib
 from threading import Thread
 from time import sleep
@@ -56,10 +55,8 @@ class VIP(Resource):
             return
 
         # create and start request threads
-        self.logger.info('starting threads...')
-        self.logger.info(urllib.parse.urljoin(config.VIP_DB_API, str(point_in_time)))
         for _ in range(config.REQUEST_THREADS):
-            thread = Thread(target=self.response_json, args=(point_in_time))
+            thread = Thread(target=self._request_json, args=(point_in_time,))
             self.request_threads.append(thread)
             thread.start()
 
@@ -77,9 +74,7 @@ class VIP(Resource):
         return False
 
     def _request_json(self, point_in_time):
-        print('in thread')
-        self.logger.info('starting thread...')
-        self.logger.info('...with pit %s...', point_in_time)
+        ''' request thread function '''
         vip_db_api_url = urllib.parse.urljoin(config.VIP_DB_API, str(point_in_time))
         try:
             response = requests.get(f'{vip_db_api_url}', timeout=config.REQUEST_TIMEOUT)
