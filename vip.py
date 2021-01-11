@@ -23,7 +23,6 @@ class VIP(Resource):
         self.logger = logging.getLogger(config.LOGGER_NAME)
 
     def get(self, point_in_time):
-        self.logger.info(point_in_time)
         # start request threads
         self._start_request_threads(point_in_time)
 
@@ -32,20 +31,23 @@ class VIP(Resource):
             sleep(0.05)
 
         # check response
-        if self.response_json:
-            try:
-                return {
-                    'source': 'vip-db',
-                    'gpsCoords': {
-                        'lat': self.response_json['latitude'],
-                        'long': self.response_json['longitude']}}
-            except KeyError:
-                return self._internal_error()
-        return self._internal_error()
+        try:
+            latitude = self.response_json['latitude']
+            longitude = self.response_json['longitude']
+        # TypeError in case of None, KeyError in case of missing key
+        except (TypeError, KeyError):
+            return self._internal_error()
+        return self._success_response(latitude, longitude)
 
     @staticmethod
     def _internal_error():
         return {'message': 'Internal Server Error'}, 500
+
+    @staticmethod
+    def _success_response(latitude: str, longitude: str):
+        return {
+            'source': 'vip-db',
+            'gpsCoords': {'lat': latitude, 'long': longitude}}, 200
 
     def _start_request_threads(self, point_in_time):
         # check request threads exist
@@ -55,12 +57,13 @@ class VIP(Resource):
             return
 
         # create and start request threads
+        vip_db_api_url = urllib.parse.urljoin(config.VIP_DB_API, str(point_in_time))
         for _ in range(config.REQUEST_THREADS):
-            thread = Thread(target=self._request_json, args=(point_in_time,))
+            thread = Thread(target=self._request_json, args=(vip_db_api_url,))
             self.request_threads.append(thread)
             thread.start()
 
-    def _request_threads_running(self):
+    def _request_threads_running(self) -> bool:
         # check request threads exists
         if not self.request_threads:
             self.logger.error('Seems to be attempt to check request threads'
@@ -73,11 +76,11 @@ class VIP(Resource):
                 return True
         return False
 
-    def _request_json(self, point_in_time):
-        ''' request thread function '''
-        vip_db_api_url = urllib.parse.urljoin(config.VIP_DB_API, str(point_in_time))
+    def _request_json(self, vip_db_api_url: str):
+        ''' method to be executed by request thread '''
+        print(vip_db_api_url)
         try:
-            response = requests.get(f'{vip_db_api_url}', timeout=config.REQUEST_TIMEOUT)
+            response = requests.get(vip_db_api_url, timeout=config.REQUEST_TIMEOUT)
         except requests.exceptions.ReadTimeout:
             return
         if response.status_code == 200:

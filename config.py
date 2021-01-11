@@ -7,5 +7,5 @@ VIP_DB_API = 'http://localhost:8088/v1/coords/'
 #                   backend DB request will time out
 # REQUEST_THREADS - number of backend DB requests executed
 #                   in parallel (for one API request)
-REQUEST_TIMEOUT = 1
-REQUEST_THREADS = 1
+REQUEST_TIMEOUT = 4.5
+REQUEST_THREADS = 5
