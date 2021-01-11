@@ -29,4 +29,4 @@ if __name__ == '__main__':
     api.add_resource(Now, '/v1/now')
     api.add_resource(VIP, '/v1/VIP/<int:point_in_time>')
 
-    app.run(debug=True)
+    app.run()

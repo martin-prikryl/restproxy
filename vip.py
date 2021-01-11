@@ -78,7 +78,6 @@ class VIP(Resource):
 
     def _request_json(self, vip_db_api_url: str):
         ''' method to be executed by request thread '''
-        print(vip_db_api_url)
         try:
             response = requests.get(vip_db_api_url, timeout=config.REQUEST_TIMEOUT)
         except requests.exceptions.ReadTimeout:
